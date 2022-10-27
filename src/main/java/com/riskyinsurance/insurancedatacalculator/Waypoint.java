@@ -17,29 +17,29 @@ timestamp (ISO 8601 date-time)
  */
 public class Waypoint {
 	
-	LocalDateTime timestamp;
-	Position position;
-	Double speed;
-	Double speed_limit;
+	private LocalDateTime timestamp;
+	private Position position;
+	private double speed;
+	private double speed_limit;
 	
 	public class Position{
 		@Override
 		public String toString() {
 			return "Position [latitude=" + latitude + ", longitude=" + longitude + "]";
 		}
-		Double latitude;
-		Double longitude;
+		double latitude;
+		double longitude;
 		
-		public Double getLatitude() {
+		public double getLatitude() {
 			return latitude;
 		}
-		public void setLatitude(Double latitude) {
+		public void setLatitude(double latitude) {
 			this.latitude = latitude;
 		}
-		public Double getLongitude() {
+		public double getLongitude() {
 			return longitude;
 		}
-		public void setLongitude(Double longitude) {
+		public void setLongitude(double longitude) {
 			this.longitude = longitude;
 		}
 				
@@ -57,16 +57,16 @@ public class Waypoint {
 	public void setPosition(Position position) {
 		this.position = position;
 	}
-	public Double getSpeed() {
+	public double getSpeed() {
 		return speed;
 	}
-	public void setSpeed(Double speed) {
+	public void setSpeed(double speed) {
 		this.speed = speed;
 	}
-	public Double getSpeed_limit() {
+	public double getSpeed_limit() {
 		return speed_limit;
 	}
-	public void setSpeed_limit(Double speed_limit) {
+	public void setSpeed_limit(double speed_limit) {
 		this.speed_limit = speed_limit;
 	}
 

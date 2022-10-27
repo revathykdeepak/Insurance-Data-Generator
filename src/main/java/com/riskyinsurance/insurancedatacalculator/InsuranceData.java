@@ -1,5 +1,7 @@
 package com.riskyinsurance.insurancedatacalculator;
 
+import java.time.Duration;
+import java.time.LocalTime;
 
 /**
  * @author dell
@@ -12,37 +14,50 @@ Total Duration, meaning the total driving time
 
 public class InsuranceData {
 	
-	Double speedingDist;
-	Double speedingDuration;
-	Double totalDist;
-	Double totalDuration;
+
+	private double speedingDist;
+	private Duration speedingDuration;
+	private double totalDist;
+	private Duration totalDuration;
 	
 	
 	
-	public Double getSpeedingDist() {
+	public InsuranceData() {
+		super();
+		speedingDist = 0.0;
+		totalDist = 0.0;
+		speedingDuration = Duration.ofSeconds(0);
+		totalDuration = Duration.ofSeconds(0);
+	}
+	public double getSpeedingDist() {
 		return speedingDist;
 	}
-	public void setSpeedingDist(Double speedingDist) {
+	public void setSpeedingDist(double speedingDist) {
 		this.speedingDist = speedingDist;
 	}
-	public Double getSpeedingDuration() {
+	public Duration getSpeedingDuration() {
 		return speedingDuration;
 	}
-	public void setSpeedingDuration(Double speedingDuration) {
+	public void setSpeedingDuration(Duration speedingDuration) {
 		this.speedingDuration = speedingDuration;
 	}
-	public Double getTotalDist() {
+	public double getTotalDist() {
 		return totalDist;
 	}
-	public void setTotalDist(Double totalDist) {
+	public void setTotalDist(double totalDist) {
 		this.totalDist = totalDist;
 	}
-	public Double getTotalDuration() {
+	public Duration getTotalDuration() {
 		return totalDuration;
 	}
-	public void setTotalDuration(Double totalDuration) {
+	public void setTotalDuration(Duration totalDuration) {
 		this.totalDuration = totalDuration;
 	}
 
+	@Override
+	public String toString() {
+		return "InsuranceData [speedingDist=" + speedingDist + ", speedingDuration=" + speedingDuration + ", totalDist="
+				+ totalDist + ", totalDuration=" + totalDuration + "]";
+	}
 
 }

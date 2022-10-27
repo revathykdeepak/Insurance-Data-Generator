@@ -1,6 +1,7 @@
 package com.riskyinsurance.insurancedatacalculator;
 
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,4 +35,24 @@ public class Utils {
 		
 	}
 
+    public static double durationToSecs(Duration duration) {
+    	return duration.toMillis() * 0.001;
+    }
+	
+    public static Duration secsToDuration(double secs) {
+    	return Duration.ofMillis(Math.round(secs * 1000)) ;
+    }
+	public static double getDistance(double initialVel, double finalVel, double timeSec) {
+		return initialVel*timeSec + (finalVel-initialVel)*0.5*timeSec;
+	}
+	
+	public static Duration getSpeedingDuration (double initialVel, double finalVel, double speedLimit, Duration duration ) {
+		//Assumes constant acceleration
+		double timeSecTotal = durationToSecs(duration);
+		double timeSec = (finalVel - speedLimit)* timeSecTotal / (finalVel - initialVel);
+		return secsToDuration(timeSec);
+	}
+	
+
+	
 }
