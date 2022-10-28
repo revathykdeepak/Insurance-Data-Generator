@@ -2,6 +2,7 @@ package com.riskyinsurance.insurancedatacalculator;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Objects;
 
 public class InsuranceData {
 	
@@ -59,6 +60,23 @@ public class InsuranceData {
 	public String toString() {
 		return "InsuranceData [speedingDist=" + speedingDist + ", speedingDuration=" + speedingDuration + ", totalDist="
 				+ totalDist + ", totalDuration=" + totalDuration + "]";
+	}
+	@Override
+	public int hashCode() {
+		return Objects.hash(speedingDist, speedingDuration, totalDist, totalDuration);
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		InsuranceData other = (InsuranceData) obj;
+		return Objects.equals(speedingDist, other.speedingDist)
+				&& Objects.equals(speedingDuration, other.speedingDuration)
+				&& Objects.equals(totalDist, other.totalDist) && Objects.equals(totalDuration, other.totalDuration);
 	}
 
 

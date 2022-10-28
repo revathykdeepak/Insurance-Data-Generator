@@ -6,6 +6,7 @@ import static com.riskyinsurance.insurancedatacalculator.Utils.getDistance;
 import static com.riskyinsurance.insurancedatacalculator.Utils.getDistanceUAcc;
 import static com.riskyinsurance.insurancedatacalculator.Utils.getSpeedingDuration;
 
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,21 +25,23 @@ public class InsuranceDataCalculator {
 	
 	static Logger logger = Logger.getLogger(InsuranceDataCalculator.class.getName());
 	
-	private static final String DEFAULT_SOURCE_PATH  = "../resourcepaths/samplenowp.json"; 
-	private static final String DEFAULT_DEST_PATH  = "../resourcepaths/samplenowp_res.json"; 
+	private static final String DEFAULT_SOURCE_PATH  = "../resourcepaths/waypoints2.json"; 
+	private static final String DEFAULT_DEST_PATH  = "../resourcepaths/test.json"; 
 	public static CalcMethod calcMethod = CalcMethod.U_ACC;
     private long droppedWaypoints = 0;
 	
 	public void saveInsuranceDataFromWaypoint (Path waypointJsonPath , 
-			Path insuranceDataPath) {
+		Path insuranceDataPath) {
 		InsuranceData insuranceData = getInsuranceDataFromWaypoint(waypointJsonPath);
 		writeDataToJsonPath(insuranceData, insuranceDataPath);
 		
 	}
 	
 	public InsuranceData getInsuranceDataFromWaypoint (Path waypointJsonPath) {
-		ArrayList<Waypoint> waypointList = getWaypointListFromPath(waypointJsonPath);
-		InsuranceData insuranceData = getInsuranceDataFromWaypoint(waypointList);
+		InsuranceData insuranceData;
+		ArrayList<Waypoint> waypointList;
+		waypointList = getWaypointListFromPath(waypointJsonPath);
+		insuranceData = getInsuranceDataFromWaypoint(waypointList);
 		return insuranceData;
 	}
 	
@@ -61,7 +64,7 @@ public class InsuranceDataCalculator {
 		return flag;
 	}
 	
-	Waypoint getnexValidWaypoint ( Iterator<Waypoint> iterator) {
+	Waypoint getnextValidWaypoint ( Iterator<Waypoint> iterator) {
 		Waypoint validWp = null, curWp; 
 		while (iterator.hasNext()) {
 			curWp = iterator.next();
@@ -88,9 +91,9 @@ public class InsuranceDataCalculator {
 			double minVelocity,maxVelocity;
 			if (!waypointList.isEmpty()) {
 				Iterator<Waypoint> iterator = waypointList.iterator();		
-				prevWp = getnexValidWaypoint(iterator);
+				prevWp = getnextValidWaypoint(iterator);
 				while(iterator.hasNext()) {
-					curWp = getnexValidWaypoint(iterator);
+					curWp = getnextValidWaypoint(iterator);
 					if(curWp == null) break;
 					duration = Duration.between(prevWp.getTimestamp(), curWp.getTimestamp());
 					distance = getDistance(prevWp, curWp, calcMethod);
@@ -140,44 +143,62 @@ public class InsuranceDataCalculator {
 		
 	}
 
-	
-	public ArrayList<Waypoint> getWaypointListFromPath (Path waypointJsonPath) {
+   /**
+    * Reads waypoints from given path and convert them 
+    *  into ArrayList of waypoint objects
+    *
+    * @param  waypointJsonPath   JSON file which stores waypoints
+    * @return  Read waypoints as an ArrayList
+    */	
+	public ArrayList<Waypoint> getWaypointListFromPath (Path waypointJsonPath) 
+			 {
 		ArrayList<Waypoint> waypointList = new ArrayList<>();
-		try {
 		    // create object mapper instance
 		    ObjectMapper mapper =  JsonMapper.builder()
 		    		   .addModule(new JavaTimeModule())
 		    		   .build();
-		    Waypoint[] wpArr = mapper.readValue(waypointJsonPath.toFile(), Waypoint[].class);
-		    for(Waypoint wp : wpArr) {
-		    	waypointList.add(wp);
-		    }
-		    	
-		    
-		} catch (Exception ex) {
-		    ex.printStackTrace();
-		    logger.log(Level.WARNING, ex.getMessage());
-		}
-		
+		    Waypoint[] wpArr;
+			try {
+				wpArr = mapper.readValue(waypointJsonPath.toFile(), Waypoint[].class);
+			    for(Waypoint wp : wpArr) {
+			    	waypointList.add(wp);
+			    }	
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "Reading waypoints from file failed !!!");
+			    logger.log(Level.SEVERE, e.getMessage());
+			} 
+
 		return waypointList;
 		
 	}
 	
-	public void writeDataToJsonPath (InsuranceData data,  Path resultJsonPath) {
-		try {
+   /**
+    * Writes calculated insurance data into given file 
+    *
+    * @param  data   Calculated InsuranceData statistics to be written
+    * @param  resultJsonPath   Json file path to write the data into
+    * @return  boolean representing function success/failure
+    */
+	public boolean writeDataToJsonPath (InsuranceData data,  Path resultJsonPath) {
 		    
-		    ObjectMapper mapper =  JsonMapper.builder()
-		    		   .addModule(new JavaTimeModule())
-		    		   .build();
+	    ObjectMapper mapper =  JsonMapper.builder()
+	    		   .addModule(new JavaTimeModule())
+	    		   .build();
 
-		    mapper.writeValue(resultJsonPath.toFile(), data);
-
-		} catch (Exception ex) {
-		    ex.printStackTrace();
-		    logger.log(Level.WARNING, ex.getMessage());
+	    try {
+			mapper.writeValue(resultJsonPath.toFile(), data);
+			return true;
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Writing Insurance Data to file failed !!!");
+		    logger.log(Level.SEVERE, e.getMessage());
 		}
+		
+	    return false;
 	}
 	
+	/**
+	 * Function to print how to run Insurance data calculator jar
+	 * */
 	private static void printInputFormat() {
 	    System.out.println("\nProper Usage is: \n\n\tjava -jar insurance-data-calculator-0.0.1-SNAPSHOT.jar"
 	    		+ " <waypoint json path> <result path> <distance cal method>");
@@ -192,7 +213,19 @@ public class InsuranceDataCalculator {
 		
 	}
 	
-
+	/**
+	 * Main function that accepts JSON path and saves resultant insurance data 
+	 * in JSON format
+	 * @param args[0] : Path to JSON file containing waypoints. 
+	 * 					Default value : DEFAULT_SOURCE_PATH
+	 * @param args[1] : Path where to store Insurance Data as JSON. 
+	 * 					Default value : DEFAULT_DEST_PATH
+	 * @param args[1] : Distance calculation  method to be used
+	 * 					 : Possibe values H and U"
+	 *   				H : Haversine method using longitude and latitudes"
+	 *   				U: Calculate distance assuming uniform acceleration between points
+	 *   				Default value : U
+	 */
 	public static void main(String[] args) {
 		
 		Path waypointJsonPath= null;

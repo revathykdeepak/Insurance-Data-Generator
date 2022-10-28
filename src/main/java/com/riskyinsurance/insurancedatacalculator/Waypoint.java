@@ -4,6 +4,7 @@
 package com.riskyinsurance.insurancedatacalculator;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * @author dell
@@ -55,6 +56,33 @@ public class Waypoint {
 		public void setLongitude(double longitude) {
 			this.longitude = longitude;
 		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getEnclosingInstance().hashCode();
+			result = prime * result + Objects.hash(latitude, longitude);
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Position other = (Position) obj;
+			if (!getEnclosingInstance().equals(other.getEnclosingInstance()))
+				return false;
+			return Double.doubleToLongBits(latitude) == Double.doubleToLongBits(other.latitude)
+					&& Double.doubleToLongBits(longitude) == Double.doubleToLongBits(other.longitude);
+		}
+		private Waypoint getEnclosingInstance() {
+			return Waypoint.this;
+		}
+		
+		
 				
 	}
 	
@@ -101,6 +129,24 @@ public class Waypoint {
 	public String toString() {
 		return "Waypoint [timestamp=" + timestamp + "\nposition=" + position + "\nspeed=" + speed + ", speed_limit="
 				+ speed_limit + "]";
+	}
+	@Override
+	public int hashCode() {
+		return Objects.hash(position, speed, speed_limit, timestamp);
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Waypoint other = (Waypoint) obj;
+		return Objects.equals(position, other.position)
+				&& Double.doubleToLongBits(speed) == Double.doubleToLongBits(other.speed)
+				&& Double.doubleToLongBits(speed_limit) == Double.doubleToLongBits(other.speed_limit)
+				&& Objects.equals(timestamp, other.timestamp);
 	}
 
 	
