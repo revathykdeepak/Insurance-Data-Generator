@@ -1,15 +1,19 @@
 package com.riskyinsurance.insurancedatacalculator;
 
-import static com.riskyinsurance.insurancedatacalculator.Utils.*;
+import static com.riskyinsurance.insurancedatacalculator.Utils.addValuesWithScale;
+import static com.riskyinsurance.insurancedatacalculator.Utils.durationToSecs;
+import static com.riskyinsurance.insurancedatacalculator.Utils.getDistance;
+import static com.riskyinsurance.insurancedatacalculator.Utils.getDistanceUAcc;
+import static com.riskyinsurance.insurancedatacalculator.Utils.getSpeedingDuration;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -18,10 +22,12 @@ import com.riskyinsurance.insurancedatacalculator.Utils.CalcMethod;
 
 public class InsuranceDataCalculator {
 	
-	private static final String DEFAULT_SOURCE_PATH  = "../resourcepaths/waypoints.json"; 
-	private static final String DEFAULT_DEST_PATH  = "../resourcepaths/wp1new.json"; 
+	static Logger logger = Logger.getLogger(InsuranceDataCalculator.class.getName());
+	
+	private static final String DEFAULT_SOURCE_PATH  = "../resourcepaths/samplenowp.json"; 
+	private static final String DEFAULT_DEST_PATH  = "../resourcepaths/samplenowp_res.json"; 
 	public static CalcMethod calcMethod = CalcMethod.U_ACC;
-
+    private long droppedWaypoints = 0;
 	
 	public void saveInsuranceDataFromWaypoint (Path waypointJsonPath , 
 			Path insuranceDataPath) {
@@ -31,24 +37,61 @@ public class InsuranceDataCalculator {
 	}
 	
 	public InsuranceData getInsuranceDataFromWaypoint (Path waypointJsonPath) {
-		List<Waypoint> waypointList = getWaypointListFromPath(waypointJsonPath);
+		ArrayList<Waypoint> waypointList = getWaypointListFromPath(waypointJsonPath);
 		InsuranceData insuranceData = getInsuranceDataFromWaypoint(waypointList);
 		return insuranceData;
 	}
 	
-
-	public InsuranceData getInsuranceDataFromWaypoint(List<Waypoint> waypointList) {
+	boolean isValidWaypoint(Waypoint wp) {
+		boolean flag = true;
+		if (wp.getPosition().getLatitude() < -90.0 ||
+				wp.getPosition().getLatitude() > 90.0	) {
+			flag = false;
+		}
+		if (wp.getPosition().getLongitude() < -180.0 ||
+				wp.getPosition().getLongitude() > 180.0	) {
+			flag = false;
+		}
+		if(wp.getSpeed() < 0.0 || wp.getSpeed() > 123.0) {
+			flag = false;
+		}
+		if(wp.getSpeed_limit() < 0.0 || wp.getSpeed_limit() > 123.0) {
+			flag = false;
+		}
+		return flag;
+	}
+	
+	Waypoint getnexValidWaypoint ( Iterator<Waypoint> iterator) {
+		Waypoint validWp = null, curWp; 
+		while (iterator.hasNext()) {
+			curWp = iterator.next();
+			if( isValidWaypoint(curWp)){
+				return curWp;
+			}
+			else {
+				droppedWaypoints ++;
+				iterator.remove();
+			}
+		}
+		return validWp;
+		
+	}
+	
+	
+	public InsuranceData getInsuranceDataFromWaypoint(ArrayList<Waypoint> waypointList) {
 		InsuranceData insuranceData = new InsuranceData();
+		droppedWaypoints = 0;
 		try {
 			Waypoint curWp, prevWp;
 			double distance, vlnDistance, speedLimit ;
 			Duration duration, vlnDuration;
 			double minVelocity,maxVelocity;
 			if (!waypointList.isEmpty()) {
-				Iterator<Waypoint> iterator = waypointList.iterator();
-				prevWp = iterator.next();
+				Iterator<Waypoint> iterator = waypointList.iterator();		
+				prevWp = getnexValidWaypoint(iterator);
 				while(iterator.hasNext()) {
-					curWp = iterator.next();
+					curWp = getnexValidWaypoint(iterator);
+					if(curWp == null) break;
 					duration = Duration.between(prevWp.getTimestamp(), curWp.getTimestamp());
 					distance = getDistance(prevWp, curWp, calcMethod);
 					//Assuming max of both speed limits if speed limits of 2 points doesn't match
@@ -81,27 +124,39 @@ public class InsuranceDataCalculator {
 				}
 			}
 
+
 		} catch (Exception ex) {
 		    ex.printStackTrace();
+		    logger.log(Level.WARNING, ex.getMessage());
 		}
 
-
+		if(droppedWaypoints > 0) {
+			logger.log(Level.WARNING, "Dropped waypoints "+ droppedWaypoints);
+		}
+		else {
+			logger.log(Level.INFO, "Dropped waypoints "+ droppedWaypoints);
+		}
 		return insuranceData;
+		
 	}
+
 	
-	public List<Waypoint> getWaypointListFromPath (Path waypointJsonPath) {
-		List<Waypoint> waypointList = new ArrayList<>();
+	public ArrayList<Waypoint> getWaypointListFromPath (Path waypointJsonPath) {
+		ArrayList<Waypoint> waypointList = new ArrayList<>();
 		try {
 		    // create object mapper instance
 		    ObjectMapper mapper =  JsonMapper.builder()
 		    		   .addModule(new JavaTimeModule())
 		    		   .build();
-	    
-		    waypointList =
-		    		Arrays.asList(mapper.readValue(waypointJsonPath.toFile(), Waypoint[].class));
+		    Waypoint[] wpArr = mapper.readValue(waypointJsonPath.toFile(), Waypoint[].class);
+		    for(Waypoint wp : wpArr) {
+		    	waypointList.add(wp);
+		    }
+		    	
 		    
 		} catch (Exception ex) {
 		    ex.printStackTrace();
+		    logger.log(Level.WARNING, ex.getMessage());
 		}
 		
 		return waypointList;
@@ -119,6 +174,7 @@ public class InsuranceDataCalculator {
 
 		} catch (Exception ex) {
 		    ex.printStackTrace();
+		    logger.log(Level.WARNING, ex.getMessage());
 		}
 	}
 	
@@ -146,6 +202,7 @@ public class InsuranceDataCalculator {
 			
 			waypointJsonPath  = Paths.get(DEFAULT_SOURCE_PATH ); 
 			insuranceDataPath  = Paths.get(DEFAULT_DEST_PATH);
+			calcMethod = CalcMethod.U_ACC;
        			
 		}
 		else if(args.length == 2 || args.length == 3) {
@@ -187,7 +244,7 @@ public class InsuranceDataCalculator {
 	
 		InsuranceDataCalculator dataCalculator = new InsuranceDataCalculator();
 		dataCalculator.saveInsuranceDataFromWaypoint(waypointJsonPath, insuranceDataPath);
-		
+	
 	}
 	
 	
