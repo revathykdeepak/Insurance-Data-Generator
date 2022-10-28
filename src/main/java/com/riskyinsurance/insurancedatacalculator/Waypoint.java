@@ -23,12 +23,25 @@ public class Waypoint {
 	private double speed_limit;
 	
 	public class Position{
+
+
+		double latitude;
+		double longitude;
+		
+		public Position(double latitude, double longitude) {
+			super();
+			this.latitude = latitude;
+			this.longitude = longitude;
+		}
+		public Position() {
+			super();
+			// TODO Auto-generated constructor stub
+		}
+		
 		@Override
 		public String toString() {
 			return "Position [latitude=" + latitude + ", longitude=" + longitude + "]";
 		}
-		double latitude;
-		double longitude;
 		
 		public double getLatitude() {
 			return latitude;
@@ -45,6 +58,20 @@ public class Waypoint {
 				
 	}
 	
+	
+	
+	public Waypoint() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public Waypoint(LocalDateTime timestamp, double latitude, double longitude,
+			double speed, double speed_limit) {
+		super();
+		this.timestamp = timestamp;
+		this.position = new Position(latitude,longitude);
+		this.speed = speed;
+		this.speed_limit = speed_limit;
+	}
 	public LocalDateTime getTimestamp() {
 		return timestamp;
 	}
