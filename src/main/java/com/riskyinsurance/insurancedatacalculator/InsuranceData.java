@@ -1,5 +1,6 @@
 package com.riskyinsurance.insurancedatacalculator;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalTime;
 
@@ -15,24 +16,24 @@ Total Duration, meaning the total driving time
 public class InsuranceData {
 	
 
-	private double speedingDist;
+	private BigDecimal speedingDist;
 	private Duration speedingDuration;
-	private double totalDist;
+	private BigDecimal totalDist;
 	private Duration totalDuration;
 	
 	
 	
 	public InsuranceData() {
 		super();
-		speedingDist = 0.0;
-		totalDist = 0.0;
+		speedingDist = BigDecimal.ZERO;
+		totalDist = BigDecimal.ZERO;
 		speedingDuration = Duration.ofSeconds(0);
 		totalDuration = Duration.ofSeconds(0);
 	}
-	public double getSpeedingDist() {
+	public BigDecimal getSpeedingDist() {
 		return speedingDist;
 	}
-	public void setSpeedingDist(double speedingDist) {
+	public void setSpeedingDist(BigDecimal speedingDist) {
 		this.speedingDist = speedingDist;
 	}
 	public Duration getSpeedingDuration() {
@@ -41,10 +42,10 @@ public class InsuranceData {
 	public void setSpeedingDuration(Duration speedingDuration) {
 		this.speedingDuration = speedingDuration;
 	}
-	public double getTotalDist() {
+	public BigDecimal getTotalDist() {
 		return totalDist;
 	}
-	public void setTotalDist(double totalDist) {
+	public void setTotalDist(BigDecimal totalDist) {
 		this.totalDist = totalDist;
 	}
 	public Duration getTotalDuration() {

@@ -1,38 +1,14 @@
 package com.riskyinsurance.insurancedatacalculator;
 
-import java.nio.file.Path;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class Utils {
 	
-	public static List<Waypoint> getWaypointListFromPath (Path waypointJsonPath) {
-		List<Waypoint> waypointList = new ArrayList();
-		try {
-		    // create object mapper instance
-		    ObjectMapper mapper =  JsonMapper.builder()
-		    		   .addModule(new JavaTimeModule())
-		    		   .build();
-	    
-		    waypointList =
-		    		Arrays.asList(mapper.readValue(waypointJsonPath.toFile(), Waypoint[].class));
-		    
-		    for (Waypoint wPoint : waypointList) {
-		    	System.out.println(wPoint);
-		    }
-
-		} catch (Exception ex) {
-		    ex.printStackTrace();
-		}
-		
-		return waypointList;
-		
+	public enum CalcMethod{
+		U_ACC,
+		HAVERSINE
 	}
 
     public static double durationToSecs(Duration duration) {
@@ -42,17 +18,46 @@ public class Utils {
     public static Duration secsToDuration(double secs) {
     	return Duration.ofMillis(Math.round(secs * 1000)) ;
     }
-	public static double getDistance(double initialVel, double finalVel, double timeSec) {
+    
+    static double getDistance(Waypoint prevWp, Waypoint curWp, CalcMethod method) {
+    	Duration duration;
+    	if (method == CalcMethod.HAVERSINE) {
+    		return getDistanceHaversine(prevWp.getPosition().getLatitude(),
+			        prevWp.getPosition().getLongitude(),
+					curWp.getPosition().getLatitude(),
+					curWp.getPosition().getLongitude());
+    	}
+    	else {
+    		duration = Duration.between(prevWp.getTimestamp(), curWp.getTimestamp());
+    		return getDistanceUAcc(prevWp.getSpeed(),curWp.getSpeed(), 
+    				durationToSecs(duration));
+    	}
+    }
+	static double getDistanceUAcc(double initialVel, double finalVel, double timeSec) {
 		return initialVel*timeSec + (finalVel-initialVel)*0.5*timeSec;
 	}
 	
-	public static Duration getSpeedingDuration (double initialVel, double finalVel, double speedLimit, Duration duration ) {
+	static Duration getSpeedingDuration (double initialVel, double finalVel, double speedLimit, Duration duration ) {
 		//Assumes constant acceleration
 		double timeSecTotal = durationToSecs(duration);
 		double timeSec = (finalVel - speedLimit)* timeSecTotal / (finalVel - initialVel);
 		return secsToDuration(timeSec);
 	}
-	
 
+    
+	public static BigDecimal addValuesWithScale( BigDecimal bigD, double doubleVal) {
+		return BigDecimal.valueOf(doubleVal).setScale(3, RoundingMode.HALF_DOWN).add(bigD);
+	}
 	
+	 static double getDistanceHaversine(double lat1, double lon1, double lat2, double lon2) {
+		 	final double R = 6371 * 1000; // In meters
+	        double dLat = Math.toRadians(lat2 - lat1);
+	        double dLon = Math.toRadians(lon2 - lon1);
+	        lat1 = Math.toRadians(lat1);
+	        lat2 = Math.toRadians(lat2);
+
+	        double a = Math.pow(Math.sin(dLat / 2),2) + Math.pow(Math.sin(dLon / 2),2) * Math.cos(lat1) * Math.cos(lat2);
+	        double c = 2 * Math.asin(Math.sqrt(a));
+	        return R * c;
+	    }	
 }
