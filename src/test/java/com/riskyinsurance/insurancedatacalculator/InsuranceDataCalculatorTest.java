@@ -49,28 +49,7 @@ public class InsuranceDataCalculatorTest {
 		Files.createDirectories(Paths.get(testDir));
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-	}
-
-
+	
 	private void testWriteDataToJsonPath(InsuranceData dataToWrite, Path path) {
 		InsuranceData dataRead;
 		boolean resFlag;
@@ -634,22 +613,4 @@ public class InsuranceDataCalculatorTest {
 		
 	}
 
-
-	
-//	@Test
-//	public void testSaveInsuranceDataFromWaypointPath_1Value() {
-//		ArrayList<Object> res= get1ValueWpString();
-//		String dataToWrite = (String) res.get(0);
-//		InsuranceData expData = (InsuranceData) res.get(1);
-//		String savePath = testDir + "getIDfromWPpath_1Value.json";
-//		Path path = Paths.get(savePath);
-//		try {
-//			Files.writeString(path, dataToWrite);
-//		} catch (IOException e) {
-//			fail("Exception : "+ e.getMessage() );
-//		}
-//		calculator.calcMethod = CalcMethod.U_ACC;
-//		InsuranceData actData = calculator.getInsuranceDataFromWaypoint(path);
-//		assertEquals(expData, actData);
-//	}
 }
