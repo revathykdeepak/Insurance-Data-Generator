@@ -34,7 +34,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.riskyinsurance.insurancedatacalculator.Utils.CalcMethod;
 
 public class InsuranceDataCalculatorTest {
-
 	static InsuranceDataCalculator calculator;
 	static ObjectMapper jsonMapper;
 	static String testDir = "insurance-data-calculator-test-data/";
@@ -49,7 +48,6 @@ public class InsuranceDataCalculatorTest {
 		Files.createDirectories(Paths.get(testDir));
 	}
 
-	
 	private void testWriteDataToJsonPath(InsuranceData dataToWrite, Path path) {
 		InsuranceData dataRead;
 		boolean resFlag;
