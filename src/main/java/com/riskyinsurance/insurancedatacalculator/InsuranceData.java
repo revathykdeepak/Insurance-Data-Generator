@@ -7,9 +7,6 @@ import java.util.Objects;
 
 public class InsuranceData {
 	
-
-
-
 	private BigDecimal speedingDist;
 	private Duration speedingDuration;
 	private BigDecimal totalDist;

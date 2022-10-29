@@ -4,9 +4,7 @@
 package com.riskyinsurance.insurancedatacalculator;
 
 import static org.junit.Assert.*;
-
 import java.time.LocalDateTime;
-
 import org.junit.Test;
 
 import com.riskyinsurance.insurancedatacalculator.Utils.CalcMethod;
