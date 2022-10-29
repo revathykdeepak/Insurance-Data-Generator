@@ -19,6 +19,58 @@ The data for Peter's Waypoints needs to be organized in these categories, to mak
 
 ## Solution
 
+Created a Java command line application that takes as input :  <br />
+- Path of waypoint JSON file
+- Path where to write output 
+- Distance calculation method (optional) [Details in Method section] 
+
+
+The resulting Insurance data values are written into the output file path in JSON format. 
+If command line application is not required, there are 3 public functions available in the code. (see Usage section for details)
+
+Sample input and output files are given in repository.
+
+### Usage
+
+Usage of command line app:
+```
+        java -jar insurance-data-calculator-0.0.1-SNAPSHOT.jar <waypoint json path> <result path> <distance cal method>
+```
+To use default values (../resourcepaths/waypoints.json ,  ../resourcepaths/result.json , U ) :
+```
+        java -jar insurance-data-calculator-0.0.1-SNAPSHOT.jar
+```
+  Where <br />
+    - &emsp; *waypoint json path*  : Full path of waypoint json file <br />
+    - &emsp; *result path*         : Full path of result file where insurance data should be saved <br />
+    - &emsp; *distance cal method* : Possibe values H and U <br />
+    &emsp;&emsp; H : Haversine method using longitude and latitudes. U: Calculate distance assuming uniform acceleration between points <br />
+
+The InsuranceDataCalculator class also have some public functions that can be used to get Insurance data from waypoints
+```
+public boolean saveInsuranceDataFromWaypoint (Path waypointJsonPath , Path insuranceDataPath)
+```
+Gets insurance data from waypoint JSON file and save results in a JSON file <br />
+&emsp; @param  waypointJsonPath   JSON file containing waypoint data <br />
+&emsp; @param  insuranceDataPath   Path to JSON in which insurance data is to be stored <br />
+&emsp; @return true for success and false for failure <br />
+
+```
+public InsuranceData getInsuranceDataFromWaypoint (Path waypointJsonPath) 
+```
+Gets insurance data from waypoint JSON file <br />
+&emsp; @param  waypointJsonPath   JSON file containing waypoint data <br />
+&emsp; @return insurance data calculated from waypoints <br />
+
+```
+public InsuranceData getInsuranceDataFromWaypoint(ArrayList<Waypoint> waypointList)
+```
+ Gets insurance data from waypoint list <br />
+ &emsp;@param  waypointList   list of waypoints <br />
+ &emsp;@return insurance data calculated from waypoints <br />
+
+### Method
+
 To calculate Insurance data categories, the entire trip is broken down into several intervals with each interval representing the travel between two consecutive 
 waypoints. Insurance data is calculated for each intervals and these values are added together to get insurance data for the entire trip. 
 
@@ -59,11 +111,11 @@ For a single interval, value of Insurance data fields are calculated as:
   $$ {t_2} = {t_1} \frac{v-v_l}{v-u} $$
      
      where <br /> 
-     &emsp;t2 -> speeding duration <br />
-     &emsp;t1 -> total duration <br />
+     &emsp;t<sub>2</sub> -> speeding duration <br />
+     &emsp;t<sub>1</sub> -> total duration <br />
      &emsp;v -> speed at the waypoint where speed limit is exceeding <br />
      &emsp;u -> speed at the waypoint where vehicle is within speed limit <br />
-     &emsp;vl -> speed limit <br />
+     &emsp;v<sub>l</sub> -> speed limit <br />
      
      Speeding distance is calculated as <br />
      
@@ -74,6 +126,20 @@ For a single interval, value of Insurance data fields are calculated as:
      &emsp;u -> speed limit <br />
      &emsp;v -> speed at the waypoint where speed limit is exceeding <br />
      &emsp;t -> speeding duration <br />
-**Assumptions**
+     
+#### Waypoint validation
 
+Included some basic validation for waypoints. If a given waypoint doesn't satisfy the given criteria, it is not used in calculation. We use the next valid waypoint. For the calculations to retain some accuracy, number of invalid waypoints is assumed to be very low. The validations used are: <br />
+&emsp; -90 <= latitude <= 90 <br />
+&emsp; -180 <= longitude <= 180 <br />
+&emsp; 0 <= speed <= 123 m/s (400 kmph) <br />
+&emsp; 0 <= speed_limit <= 123 m/s 
+
+
+#### Assumptions
+
+The insurance data is calculated based on following assumptions :
+- The waypoints given are from a single trip, organized according to time stamp.
+- The time interval between two waypoints are low so that we can safely assume the vehicle travelled in the same direction , in constant acceleration, without any breaks between the two points.
+- Most of the waypoints have valid data. 
 
