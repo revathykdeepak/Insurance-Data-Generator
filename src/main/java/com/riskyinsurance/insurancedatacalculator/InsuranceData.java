@@ -5,6 +5,17 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.Objects;
 
+
+/**
+ * Class to store Insurance Data details
+ * 
+ * Units:
+ * speedingDist (meters)
+ * speedingDuration (seconds)
+ * totalDist (meters)
+ * totalDuration (seconds)
+ *
+ */
 public class InsuranceData {
 	
 	private BigDecimal speedingDist;

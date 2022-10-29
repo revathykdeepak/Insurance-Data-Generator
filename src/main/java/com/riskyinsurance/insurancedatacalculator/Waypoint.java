@@ -7,13 +7,14 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * @author dell
+ * Class to store waypoint details
  * 
+ * Units:
  * latitude (degrees)
-longitude (degrees)
-speed (meters per second)
-speed_limit (meters per second)
-timestamp (ISO 8601 date-time)
+ * longitude (degrees)
+ * speed (meters per second)
+ * speed_limit (meters per second)
+ * timestamp (ISO 8601 date-time)
  *
  */
 public class Waypoint {
