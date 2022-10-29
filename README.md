@@ -45,7 +45,7 @@ Usage of command line app:
   Where <br />
     - &emsp; *waypoint json path*  : Full path of waypoint json file <br />
     - &emsp; *result path*         : Full path of result file where insurance data should be saved <br />
-    - &emsp; *distance cal method* : Possibe values H and U <br />
+    - &emsp; *distance cal method* (optional) : Possibe values H and U <br />
     &emsp;&emsp; H : Haversine method using longitude and latitudes. U: Calculate distance assuming uniform acceleration between points <br />
 
 The InsuranceDataCalculator class also have some public functions that can be used to get Insurance data from waypoints
