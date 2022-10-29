@@ -28,7 +28,7 @@ Created a Java command line application that takes as input :  <br />
 The resulting Insurance data values are written into the output file path in JSON format. 
 If command line application is not required, there are 3 public functions available in the code. (see Usage section for details)
 
-[Sample input](./sample%20data/sample%20input.json) and [sample output](./sample%20data/sample%20result.json) files are given in repository.
+[Sample input](./sample%20data/sample%20waypoints.json) and [sample output](./sample%20data/sample%20result.json) files are given in repository.
 
 ### Usage
 
