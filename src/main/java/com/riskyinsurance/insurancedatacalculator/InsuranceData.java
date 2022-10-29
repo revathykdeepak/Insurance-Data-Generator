@@ -1,6 +1,7 @@
 package com.riskyinsurance.insurancedatacalculator;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.Objects;
 
@@ -28,6 +29,15 @@ public class InsuranceData {
 		this.speedingDist = speedingDist;
 		this.speedingDuration = speedingDuration;
 		this.totalDist = totalDist;
+		this.totalDuration = totalDuration;
+	}
+	
+	public InsuranceData(double speedingDist, Duration speedingDuration, double totalDist,
+			Duration totalDuration) {
+		super();
+		this.speedingDist = BigDecimal.valueOf(speedingDist).setScale(3, RoundingMode.HALF_DOWN);
+		this.speedingDuration = speedingDuration;
+		this.totalDist = BigDecimal.valueOf(totalDist).setScale(3, RoundingMode.HALF_DOWN);
 		this.totalDuration = totalDuration;
 	}
 	

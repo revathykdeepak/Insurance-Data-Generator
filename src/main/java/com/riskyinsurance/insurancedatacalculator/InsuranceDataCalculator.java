@@ -25,18 +25,41 @@ public class InsuranceDataCalculator {
 	
 	static Logger logger = Logger.getLogger(InsuranceDataCalculator.class.getName());
 	
-	private static final String DEFAULT_SOURCE_PATH  = "../resourcepaths/waypoints2.json"; 
-	private static final String DEFAULT_DEST_PATH  = "../resourcepaths/test.json"; 
-	public static CalcMethod calcMethod = CalcMethod.U_ACC;
+
+	//save default value for waypoint JSON file
+	private static final String DEFAULT_SOURCE_PATH  = "../resourcepaths/waypoints.json"; 
+	//save default value for destination JSON file
+	private static final String DEFAULT_DEST_PATH  = "../resourcepaths/result.json"; 
+	//store calculation method to be used in distance calculation
+	public CalcMethod calcMethod = CalcMethod.U_ACC;
+	//store number of invalid waypoints in data
     private long droppedWaypoints = 0;
+    
+	public InsuranceDataCalculator(CalcMethod calcMethod) {
+		super();
+		this.calcMethod = calcMethod;
+	}
 	
-	public void saveInsuranceDataFromWaypoint (Path waypointJsonPath , 
+  /**
+    * Gets insurance data from waypoint JSON file and save results in a JSON file
+    *
+    * @param  waypointJsonPath   JSON file containing waypoint data
+    * @param  insuranceDataPath   Path to JSON in which insurance data is to be stored
+    * @return true for success and false for failure
+    */	
+	public boolean saveInsuranceDataFromWaypoint (Path waypointJsonPath , 
 		Path insuranceDataPath) {
 		InsuranceData insuranceData = getInsuranceDataFromWaypoint(waypointJsonPath);
 		writeDataToJsonPath(insuranceData, insuranceDataPath);
-		
+		return true;
 	}
-	
+
+   /**
+    * Gets insurance data from waypoint JSON file
+    *
+    * @param  waypointJsonPath   JSON file containing waypoint data
+    * @return insurance data calculated from waypoints
+    */		
 	public InsuranceData getInsuranceDataFromWaypoint (Path waypointJsonPath) {
 		InsuranceData insuranceData;
 		ArrayList<Waypoint> waypointList;
@@ -44,6 +67,19 @@ public class InsuranceDataCalculator {
 		insuranceData = getInsuranceDataFromWaypoint(waypointList);
 		return insuranceData;
 	}
+	
+   /**
+    * Checks whether values in given waypoint is valid
+    * 
+    * Current implementation checks:
+    *  -90 <= latitude <= 90
+    *  -180 <= longitude <= 180
+    *  0 <= speed <= 123 m/s (400 kmph)
+    *  0 <= speed_limit <= 123 m/s 
+    *
+    * @param  wp   JWaypoint to be tested
+    * @return  boolean representing whether waypoint is valid or not
+    */	
 	
 	boolean isValidWaypoint(Waypoint wp) {
 		boolean flag = true;
@@ -64,6 +100,14 @@ public class InsuranceDataCalculator {
 		return flag;
 	}
 	
+   /**
+    * Gets next valid waypoint in the given waypoint list iterator
+    *  and drops invalid waypoints in between. Number of dropped values
+    *  is being kept track using class variable "droppedWaypoints"
+
+    * @param  iterator   pointing to current waypoint being analyzed
+    * @return next valid waypoint or null with iterator modified to point towards this value
+    */	
 	Waypoint getnextValidWaypoint ( Iterator<Waypoint> iterator) {
 		Waypoint validWp = null, curWp; 
 		while (iterator.hasNext()) {
@@ -80,7 +124,18 @@ public class InsuranceDataCalculator {
 		
 	}
 	
-	
+  /**
+    * Gets insurance data from waypoint list
+    *  
+    *  Description: divides trip into different intervals which each interval
+    *  representing the time between two consecutive valid waypoints. For each interval, 
+    *  duration, distance, speeding duration , speeding distance are calculated.
+    *  These values are added to get final insurance data.
+    *  
+	*
+    * @param  waypointList   list of waypoints
+    * @return insurance data calculated from waypoints
+    */		
 	public InsuranceData getInsuranceDataFromWaypoint(ArrayList<Waypoint> waypointList) {
 		InsuranceData insuranceData = new InsuranceData();
 		droppedWaypoints = 0;
@@ -91,29 +146,54 @@ public class InsuranceDataCalculator {
 			double minVelocity,maxVelocity;
 			if (!waypointList.isEmpty()) {
 				Iterator<Waypoint> iterator = waypointList.iterator();		
-				prevWp = getnextValidWaypoint(iterator);
+				prevWp = getnextValidWaypoint(iterator); // get first valid waypoint
+				//iterate through remaining waypoints
 				while(iterator.hasNext()) {
 					curWp = getnextValidWaypoint(iterator);
+					//if only single waypoint is present, no insurance data
+					//can be calculated. So exit
 					if(curWp == null) break;
+					
+					//calculate insurance data values for this interval [prevWp,curWp]
+					// prevWp -> previous waypoint
+					//curWp -> current waypoint
+					
 					duration = Duration.between(prevWp.getTimestamp(), curWp.getTimestamp());
 					distance = getDistance(prevWp, curWp, calcMethod);
 					//Assuming max of both speed limits if speed limits of 2 points doesn't match
 					speedLimit = Math.max(curWp.getSpeed_limit(), prevWp.getSpeed_limit());
 					minVelocity = Math.min(curWp.getSpeed(), prevWp.getSpeed());
 					maxVelocity = Math.max(curWp.getSpeed(), prevWp.getSpeed());
+					
+					//if min velocity of both waypoints is greater than speed limit
+					// speed limit is broken during entire interval.
+					// speeding distance = total distance in interval
+					//speeding time = time of interval
 					if (minVelocity > speedLimit) {
 						  vlnDuration = duration;
 						  vlnDistance = distance;
-					}else if (maxVelocity > speedLimit && 
+					}						  
+					//If minvelocity <= speedlimit < maxvelocity
+					//speed limit is broken in some parts of the interval
+					// assume uniformely accelerated motion between the waypoints
+					// calculate speeding duration -> duration when speed was b/w (speedlimit, maxvelocity)
+					// speeding distance -> distance travelled during speed limit violation. use getDistanceUAcc()
+					else if (maxVelocity > speedLimit && 
 							speedLimit >= minVelocity ){
 				          vlnDuration = getSpeedingDuration(minVelocity, maxVelocity, curWp.getSpeed_limit(), duration);
 				          vlnDistance = getDistanceUAcc (curWp.getSpeed_limit(), maxVelocity,
-				        		  durationToSecs(vlnDuration));
-				          
-					}else {
+				        		  durationToSecs(vlnDuration));	
+
+					}
+					
+					// minvelocity <= maxvelocity <= speed_limit
+					//the vehicle was within speed limit in the interval
+					// speeding distance = speeding time = 0
+					else {
 						vlnDuration = Duration.ofSeconds(0);
 						vlnDistance = 0.0;
 					}
+					// add this interval's insurance data values to insurance data object
 					insuranceData.setSpeedingDist(
 						 addValuesWithScale(insuranceData.getSpeedingDist(), vlnDistance));
 					insuranceData.setSpeedingDuration
@@ -230,6 +310,7 @@ public class InsuranceDataCalculator {
 		
 		Path waypointJsonPath= null;
 		Path insuranceDataPath = null;
+		CalcMethod calcMethod= CalcMethod.U_ACC;
 
 		if (args.length == 0) {
 			
@@ -275,9 +356,9 @@ public class InsuranceDataCalculator {
 		    System.exit(0);
 		}
 	
-		InsuranceDataCalculator dataCalculator = new InsuranceDataCalculator();
+		InsuranceDataCalculator dataCalculator = new InsuranceDataCalculator(calcMethod);
 		dataCalculator.saveInsuranceDataFromWaypoint(waypointJsonPath, insuranceDataPath);
-	
+		System.out.println("\nSuccess!!! Result available in " + insuranceDataPath.toString());
 	}
 	
 	

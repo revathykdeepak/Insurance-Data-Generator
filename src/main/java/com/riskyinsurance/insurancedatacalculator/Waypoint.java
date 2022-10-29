@@ -73,10 +73,8 @@ public class Waypoint {
 			if (getClass() != obj.getClass())
 				return false;
 			Position other = (Position) obj;
-			if (!getEnclosingInstance().equals(other.getEnclosingInstance()))
-				return false;
-			return Double.doubleToLongBits(latitude) == Double.doubleToLongBits(other.latitude)
-					&& Double.doubleToLongBits(longitude) == Double.doubleToLongBits(other.longitude);
+			return Double.doubleToLongBits(latitude) == 					Double.doubleToLongBits(other.latitude)
+					&& Double.doubleToLongBits(longitude) == 					Double.doubleToLongBits(other.longitude);
 		}
 		private Waypoint getEnclosingInstance() {
 			return Waypoint.this;
@@ -90,7 +88,6 @@ public class Waypoint {
 	
 	public Waypoint() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 	public Waypoint(LocalDateTime timestamp, double latitude, double longitude,
 			double speed, double speed_limit) {
