@@ -33,7 +33,7 @@ public class InsuranceDataCalculator {
 	//store calculation method to be used in distance calculation
 	public CalcMethod calcMethod = CalcMethod.U_ACC;
 	//store number of invalid waypoints in data
-    private long droppedWaypoints = 0;
+        private long droppedWaypoints = 0;
     
 	public InsuranceDataCalculator(CalcMethod calcMethod) {
 		super();
