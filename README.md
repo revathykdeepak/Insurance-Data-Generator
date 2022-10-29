@@ -30,15 +30,17 @@ If command line application is not required, there are 3 public functions availa
 
 [Sample input](./sample%20data/sample%20waypoints.json) and [sample output](./sample%20data/sample%20result.json) files are given in repository.
 
+The Insurance data calculated contains the following details : 
+- Distance Speeding (meters)
+- Duration Speeding (seconds)
+- Total Distance (meters)
+- Total Duration (seconds)
+
 ### Usage
 
 Usage of command line app:
 ```
         java -jar insurance-data-calculator-0.0.1-SNAPSHOT.jar <waypoint json path> <result path> <distance cal method>
-```
-To use default values (../resourcepaths/waypoints.json ,  ../resourcepaths/result.json , U ) :
-```
-        java -jar insurance-data-calculator-0.0.1-SNAPSHOT.jar
 ```
   Where <br />
     - &emsp; *waypoint json path*  : Full path of waypoint json file <br />
